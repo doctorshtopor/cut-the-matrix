@@ -63,3 +63,8 @@ if is_leader:
     else:
         counts_rows = None
         displs_rows = None
+
+    new_comm.Scatterv([A if rank == 0 else None, counts_rows, displs_rows, MPI.INT],
+                         recv_row_block, root=0)#рассылаю строки процессам 0, k2, 2k2, 3k2...
+else:
+    recv_row_block = None
