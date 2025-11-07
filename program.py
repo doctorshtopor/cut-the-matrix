@@ -90,3 +90,51 @@ current_displ = 0
 for j in range(k2):
     displs_cols.append(current_displ)
     current_displ += cols_per_block[j]
+
+if group_rank == 0:
+    #создаю специальный тип данных отдельного столбца
+    column_type = MPI.INT32_T.Create_vector(count = M_local, blocklength = 1, stride = N)
+    #элементы столбца расположены в памяти так: a0, a0 + N, a0 + 2N, ..., a0 + (M_local-1)*N
+    #именно эта строчка и позволяет пройтись по непрерывному отрезку памяти как по столбцу
+
+
+    #проблема в том, что у такой конструкции по мнению MPI память занимают
+    #не только сами элементы a0, a0 + N, a0 + 2N, ..., a0 + (M_local-1)*N
+    #но и все элементы, что находятся между ними
+    #то есть размер столбца будет не M_local*4(байта), а M_local*N*4(байта)
+
+    #чтобы не учитывать весь этот лишний размер надо поменять параметр extent
+
+    #extent — это расстояние в байтах между началом первого элемента 
+    #и началом следующего такого же типа, если их несколько подряд.
+
+    #если размер элемента size = extent этих элементов, то они расположены непрерывно в памяти
+    #(т.е между ними нет промежутков) 
+    #это необходимо для применения Scatterv
+
+    #устанавливаю extent равным size элемента моего столбца
+    extent = MPI.INT32_T.Get_size() 
+    column_type = column_type.Create_resized(lb=0, extent=extent)
+
+    #тип готов к работе
+    column_type.Commit()
+    
+    
+    str_comm.Scatterv([recv_row_block, counts_cols, displs_cols, column_type],
+                        recv_local_block, root=0)
+    
+    column_type.Free()
+else:
+    str_comm.Scatterv(None, recv_local_block, root=0)
+
+
+local_block_2d = recv_local_block.reshape((M_local, N_local), order='F')
+
+
+print(f"Rank {rank} получил блок ({M_local}x{N_local}):\n{local_block_2d}\n", flush=True)
+
+#очистка памяти 
+if rank == 0:
+    del A
+if is_leader:
+    del recv_row_block
