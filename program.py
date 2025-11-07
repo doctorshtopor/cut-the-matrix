@@ -44,3 +44,22 @@ row_group_id = rank // k2 #индекс к какому набору строк 
 if is_leader:
     #выделяю место в памяти под каждую полосу 
     recv_row_block = np.empty(rows_per_block[row_group_id] * N, dtype=np.int32)
+
+    if new_comm.Get_rank() == 0:
+        #число элементов в каждой полосе
+        counts_rows = []
+        for i in range(k1):
+            count = rows_per_block[i] * N
+            counts_rows.append(count)
+
+        #индекс начала следующей полосы
+        displs_rows = []
+        current_displ = 0
+        for i in range(k1):
+            displs_rows.append(current_displ)
+            current_displ += counts_rows[i]
+
+        
+    else:
+        counts_rows = None
+        displs_rows = None
