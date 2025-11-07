@@ -16,3 +16,9 @@
 Установка зависимостей:
 ```bash
 pip install mpi4py
+```
+##Запуск программы:
+
+```bash
+mpiexec -n 6 python program.py
+
