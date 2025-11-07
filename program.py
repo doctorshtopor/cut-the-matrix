@@ -31,3 +31,9 @@ for j in range(k2):
     cols_per_block[j] = N // k2
     if j < N % k2:  
         cols_per_block[j] += 1
+
+is_leader = (rank % k2 == 0) #условие: ранг процесса делится без остатка на k2 (на 3)
+leader_color = 0 if is_leader else MPI.UNDEFINED
+
+new_comm = comm.Split(color = leader_color, key=rank) #создаю новый коммуникатор только с процессами
+#удовлетворяющие условию is_leader
