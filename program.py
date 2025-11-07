@@ -68,3 +68,25 @@ if is_leader:
                          recv_row_block, root=0)#рассылаю строки процессам 0, k2, 2k2, 3k2...
 else:
     recv_row_block = None
+
+str_comm = comm.Split(color=row_group_id, key=rank) #создаю "коммуникататор отдельной полосы"
+#процессы (0, 1, 2) главного коммуникатора comm будут получать блоки из первой полосы; (3, 4, 5) - из второй
+
+group_rank = str_comm.Get_rank()
+
+M_local = rows_per_block[row_group_id]
+N_local = cols_per_block[group_rank]
+recv_local_block = np.empty(M_local * N_local, dtype=np.int32)
+
+#число столбцов для каждого процесса
+counts_cols = []
+for j in range(k2):
+    count = cols_per_block[j]
+    counts_cols.append(count)
+
+
+displs_cols = []
+current_displ = 0
+for j in range(k2):
+    displs_cols.append(current_displ)
+    current_displ += cols_per_block[j]
