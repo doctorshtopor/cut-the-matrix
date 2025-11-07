@@ -37,3 +37,10 @@ leader_color = 0 if is_leader else MPI.UNDEFINED
 
 new_comm = comm.Split(color = leader_color, key=rank) #создаю новый коммуникатор только с процессами
 #удовлетворяющие условию is_leader
+
+row_group_id = rank // k2 #индекс к какому набору строк (0 или 1 в нашем случае) будет принадлежать строка
+#(индекс в массиве rows_per_block)
+
+if is_leader:
+    #выделяю место в памяти под каждую полосу 
+    recv_row_block = np.empty(rows_per_block[row_group_id] * N, dtype=np.int32)
