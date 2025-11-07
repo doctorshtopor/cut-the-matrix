@@ -17,7 +17,7 @@
 ```bash
 pip install mpi4py
 ```
-##Запуск программы:
+## Запуск программы:
 
 ```bash
 mpiexec -n 6 python program.py
