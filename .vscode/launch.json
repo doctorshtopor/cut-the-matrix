@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "MPI: Python (6 процессов)",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "preLaunchTask": "Запуск MPI через mpiexec"
+    }
+  ]
+}
